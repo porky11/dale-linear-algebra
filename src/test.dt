@@ -1,0 +1,5 @@
+(import stdlib)
+
+(def main (fn extern-c void (void)
+  (no-op)))
+
