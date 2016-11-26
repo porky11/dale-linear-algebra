@@ -4,7 +4,7 @@ FLAGS=-M../dale-extensions
 
 all: test
 
-test: liblinear-algebra.dtm
+test: liblinear-algebra.dtm src/test.dt
   dalec src/test.dt -o test $(FLAGS)
 
 liblinear-algebra.dtm: src/linear-algebra.dt

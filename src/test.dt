@@ -1,4 +1,13 @@
-(import stdlib)
+(import linear-algebra)
+
+(using-namespace std.concepts
+
+(instantiate Matrix int 3 3)
+(implement Matrix (Matrix int 3 3))
+(instantiate + (Matrix int 3 3))
+;(instantiate * (Matrix int 3 3))
+;(instantiate * (Matrix int 3 3) (Matrix int 3 3))
+)
 
 (def main (fn extern-c void (void)
   (no-op)))
