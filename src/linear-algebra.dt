@@ -28,12 +28,12 @@
       (def transpose (fn extern (retval (uq Mat)) ((a (ref (uq Mat))))
         (for (i int 0) (< i (uq M)) (incv i)
           (for (j int 0) (< j (uq N)) (incv j)
-            (setv (@$' (@:@ retval elements) j i)) (@$' (@:@ a elements) i j)))))
+            (setv (@$' (@:@ retval elements) j i)) (@$' (@:@ a elements) i j))))) |#
       ;(def value-type (macro extern ((arrp (p (uq Mat)))) (q (uq T))))
       (def size (fn extern size ((arrp (ref (const (uq Mat)))) (a int))
-        (if (= a 0) (uq N)
-                    (uq M))))
-                     |# )))
+        (cast (if (= a 0) (uq N)
+                    (uq M)) size)))
+                      )))
 
 (def-concept-macro + extern ((Mat Matrix))
   (def N (var auto \ (qq size (@ retval) 0)))
