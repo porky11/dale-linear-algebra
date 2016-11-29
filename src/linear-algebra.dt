@@ -7,7 +7,6 @@
 (using-namespace std.concepts
 (using-namespace std.macros
 
-
 (def-concept Matrix (refines Type) (T) true) ;;will have to define 2d size function and value type and 2d accessor
 
 (def-type-macro3 Matrix)
@@ -15,12 +14,11 @@
 ;;TODO use a generic multidimensional Array type for representing Matrices
 (def-concept-macro Matrix extern ((T Type) (N Value) (M Value))
   (let ((Mat \ (qq Matrix (uq T) (uq N) (uq M))))
-    (print Mat)
-    (printf "=Mat\n")
     (qq do
       (def (uq Mat)
         (struct extern ((elements (array-of (uq N) (array-of (uq M) (uq T)))))))
-#|      (def frobenius-norm (fn extern (retval (uq T)) ((a (ref (uq Mat))))
+      (std.concepts.implement Matrix (uq Mat))
+      (def frobenius-norm (fn extern (retval (uq T)) ((a (ref (uq Mat))))
         (setf retval (cast 0 (uq T)))
         (for (i int 0) (< i (uq M)) (incv i)
           (for (j int 0) (< j (uq N)) (incv j)
@@ -28,32 +26,31 @@
       (def transpose (fn extern (retval (uq Mat)) ((a (ref (uq Mat))))
         (for (i int 0) (< i (uq M)) (incv i)
           (for (j int 0) (< j (uq N)) (incv j)
-            (setv (@$' (@:@ retval elements) j i)) (@$' (@:@ a elements) i j))))) |#
-      ;(def value-type (macro extern ((arrp (p (uq Mat)))) (q (uq T))))
-      (def size (fn extern size ((arrp (ref (const (uq Mat)))) (a int))
-        (cast (if (= a 0) (uq N)
-                    (uq M)) size)))
-                      )))
+            (setf (# (@$' (@:@ retval elements) j i))
+                  (@$' (@:@ a elements) i j))))))
+      (def value-type (macro extern ((matp (p (Matrix (uq T) (uq N) (uq M)))))
+        (q (uq T))))
+      (def size (fn extern size ((matp (ref (const (Matrix (uq T) (uq N) (uq M))))) (a int))
+        (cast (if (= a 0) (uq N) (uq M)) size))))))
 
 (def-concept-macro + extern ((Mat Matrix))
   (def N (var auto \ (qq size (@ retval) 0)))
   (def M (var auto \ (qq size (@ retval) 1)))
   (qq def + (fn extern (retval (uq Mat)) ((a (ref (uq Mat))) (b (ref (uq Mat))))
-    (for (i int 0) (< i (uq N)) (incv i)
-      (for (j int 0) (< j (uq M)) (incv j)
-        (setv (@$' (@:@ retval elements) i j)
+    (for (i int 0) (< i (cast (uq N) int)) (incv i)
+      (for (j int 0) (< j (cast (uq M) int)) (incv j)
+        (setf (# (@$' (@:@ retval elements) i j))
               (+ (@$' (@:@ a elements) i j)
                  (@$' (@:@ b elements) i j))))))))
 
-#| ;;This won't work yet, how do I get the value-type T of Mat outsinde of function
+;;This won't work yet, how do I get the value-type T of Mat outsinde of function
 (def-concept-macro * extern ((Mat Matrix))
   (def N (var auto \ (qq size (@ retval) 0)))
   (def M (var auto \ (qq size (@ retval) 1)))
-  (def T (var auto \ (qq value-type retval)))
-  (qq def * (fn extern (retval (uq Mat)) ((a (ref (uq Mat)) (b T)))
-    (for (i int 0) (< i (uq N)) (incv i)
-      (for (j int 0) (< j (uq M)) (incv j)
-        (setv (@$' (@:@ retval elements) i j)
+  (qq def * (fn extern (retval (uq Mat)) ((a (ref (uq Mat))) (b (value-type (nullptr (uq Mat)))))
+    (for (i int 0) (< i (cast (uq N) int)) (incv i)
+      (for (j int 0) (< j (cast (uq M) int)) (incv j)
+        (setf (# (@$' (@:@ retval elements) i j))
               (* (@$' (@:@ a elements) i j) b)))))))
 
 ;;same problem here, also for matrix size
@@ -62,8 +59,9 @@
   (def M (var auto \ (qq size (@ a) 1)))
   (def P (var auto \ (qq size (@ a) 0)))
   (def P0 (var auto \ (qq size (@ b) 1)))
-  (def T (var auto \ (qq value-type a)))
-  (qq def * (fn (retval (Matrix (uq T) (uq N) (uq M))) ((a (ref (uq Mat1))) (b (ref (uq Mat2))))
+  (qq def * (fn extern (retval (Matrix (value-type (nullptr (uq Mat1)))
+                                       (uq N) (uq M)))
+                ((a (ref (uq Mat1))) (b (ref (uq Mat2))))
     (assert (= (uq P) (uq P0)))
     (for (i int 0) (< i (uq M)) (incv i)
       (for (j int 0) (< j (uq N)) (incv j)
@@ -74,7 +72,6 @@
           (incf (# (@$' (@:@ retval elements)))
                 (* (@$' (@:@ a elements) i k)
                    (@$' (@:@ b elements) k j))))))))))
-|#
 
 ))
 
