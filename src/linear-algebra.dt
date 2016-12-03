@@ -30,12 +30,15 @@
                   (@$' (@:@ a elements) i j))))))
       (def value-type (macro extern ((matp (p (Matrix (uq T) (uq N) (uq M)))))
         (q (uq T))))
-      (def size (fn extern size ((matp (ref (const (Matrix (uq T) (uq N) (uq M))))) (a int))
-        (cast (if (= a 0) (uq N) (uq M)) size))))))
+      (def size-n (macro extern ((matp (p (Matrix (uq T) (uq N) (uq M)))))
+        (q (uq N))))
+      (def size-m (macro extern ((matp (p (Matrix (uq T) (uq N) (uq M)))))
+        (q (uq M))))
+      )))
 
 (def-concept-macro + extern ((Mat Matrix))
-  (def N (var auto \ (qq size (@ retval) 0)))
-  (def M (var auto \ (qq size (@ retval) 1)))
+  (def N (var auto \ (qq size-n (nullptr (uq Mat)))))
+  (def M (var auto \ (qq size-m (nullptr (uq Mat)))))
   (qq def + (fn extern (retval (uq Mat)) ((a (ref (uq Mat))) (b (ref (uq Mat))))
     (for (i int 0) (< i (cast (uq N) int)) (incv i)
       (for (j int 0) (< j (cast (uq M) int)) (incv j)
@@ -45,8 +48,8 @@
 
 ;;This won't work yet, how do I get the value-type T of Mat outsinde of function
 (def-concept-macro * extern ((Mat Matrix))
-  (def N (var auto \ (qq size (@ retval) 0)))
-  (def M (var auto \ (qq size (@ retval) 1)))
+  (def N (var auto \ (qq size-n (nullptr (uq Mat)))))
+  (def M (var auto \ (qq size-m (nullptr (uq Mat)))))
   (qq def * (fn extern (retval (uq Mat)) ((a (ref (uq Mat))) (b (value-type (nullptr (uq Mat)))))
     (for (i int 0) (< i (cast (uq N) int)) (incv i)
       (for (j int 0) (< j (cast (uq M) int)) (incv j)
@@ -55,25 +58,24 @@
 
 ;;same problem here, also for matrix size
 (def-concept-macro * extern ((Mat1 Matrix) (Mat2 Matrix))
-  (def N (var auto \ (qq size (@ b) 0)))
-  (def M (var auto \ (qq size (@ a) 1)))
-  (def P (var auto \ (qq size (@ a) 0)))
-  (def P0 (var auto \ (qq size (@ b) 1)))
-  (qq def * (fn extern (retval (Matrix (value-type (nullptr (uq Mat1)))
-                                       (uq N) (uq M)))
+  (def N  (var auto \ (qq size-n (nullptr (uq Mat2)))))
+  (def M  (var auto \ (qq size-m (nullptr (uq Mat1)))))
+  (def P  (var auto \ (qq size-n (nullptr (uq Mat1)))))
+  (def P0 (var auto \ (qq size-m (nullptr (uq Mat2)))))
+
+  (qq do
+    (import assert)
+    (def * (fn extern (retval (Matrix (value-type (nullptr (uq Mat1)))
+                                      (uq N) (uq M)))
                 ((a (ref (uq Mat1))) (b (ref (uq Mat2))))
-    (assert (= (uq P) (uq P0)))
+    (std.assert (= (uq P) (uq P0)))
     (for (i int 0) (< i (uq M)) (incv i)
       (for (j int 0) (< j (uq N)) (incv j)
-        (setv (@$' (@:@ retval elements) i j) (coerce 0 T)
+;        (setf (# (@$' (@:@ retval elements) i j)) (coerce 0 T))
+;        (for (k int 0) (< k (uq P)) (incv k)
+;          (incf (# (@$' (@:@ retval elements) i j))
+;                (* (@$' (@:@ a elements) i k)
+;                   (@$' (@:@ b elements) k j))))
 
-          (for (k int 0) (< k (uq P)) (incv k)
-          
-          (incf (# (@$' (@:@ retval elements)))
-                (* (@$' (@:@ a elements) i k)
-                   (@$' (@:@ b elements) k j))))))))))
-
+        0))))))
 ))
-
-
-
